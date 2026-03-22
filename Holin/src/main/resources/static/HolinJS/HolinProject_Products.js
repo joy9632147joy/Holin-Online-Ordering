@@ -113,10 +113,10 @@ function closeFavPanel() {
 let cart = [];
 
 function addToCart(productId) {
-    let product = products.find(p => p.id.trim() === productId.trim());
+    let product = products.find(p => String(p.id) === String(productId));
     if (!product) return;
 
-    let existing = cart.find(item => item.id.trim() === productId.trim());
+    let existing = cart.find(item => String(item.id) === String(productId));
     if (existing) {
         existing.qty += 1;
     } else {
@@ -128,12 +128,12 @@ function addToCart(productId) {
 }
 
 function removeFromCart(productId) {
-    cart = cart.filter(item => item.id.trim() !== productId.trim());
+    cart = cart.filter(item => String(item.id) !== String(productId));
     renderCart();
 }
 
 function changeQty(productId, delta) {
-    let item = cart.find(i => i.id.trim() === productId.trim());
+    let item = cart.find(i => String(i.id) === String(productId));
     if (!item) return;
     item.qty += delta;
     if (item.qty <= 0) {
@@ -168,10 +168,10 @@ function renderCart() {
                 <div class="panel-item-price">$ ${item.price} × ${item.qty}</div>
             </div>
             <div class="cart-item-controls">
-                <button class="qty-btn" onclick="changeQty('${item.id.trim()}', -1)">−</button>
+                <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
                 <span class="qty-num">${item.qty}</span>
-                <button class="qty-btn" onclick="changeQty('${item.id.trim()}', 1)">+</button>
-                <button class="remove-btn" onclick="removeFromCart('${item.id.trim()}')">
+                <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+                <button class="remove-btn" onclick="removeFromCart('${item.id}')">
                     <i class="bi bi-trash3"></i>
                 </button>
             </div>
@@ -192,7 +192,7 @@ function closeCartPanel() {
 }
 
 function showCartFeedback(productId) {
-    let btn = document.querySelector(`.add-to-cart-btn[data-id="${productId.trim()}"]`);
+    let btn = document.querySelector(`.add-to-cart-btn[data-id="${productId}"]`);
     if (!btn) return;
     btn.innerHTML = '已加入 ✓';
     btn.classList.add('added');
@@ -248,7 +248,7 @@ function initPanelsUI() {
                     <span>合計</span>
                     <span id="cart-total">$ 0</span>
                 </div>
-                <button class="panel-action-btn checkout" onclick="alert('金流串接中，敬請期待！')">
+                <button class="panel-action-btn checkout" onclick="checkout()">
                     <i class="bi bi-credit-card me-1"></i>前往結帳
                 </button>
             </div>
@@ -258,7 +258,49 @@ function initPanelsUI() {
 }
 
 
-// ===== 產品資料 =====
+// ===== 結帳（串後端）=====
+async function checkout() {
+    if (cart.length === 0) {
+        alert('購物車是空的！');
+        return;
+    }
+
+    // TODO: 從登入狀態取得 memberId（之後串 JWT 再補）
+    const memberId = 1;
+
+    const orderRequest = {
+        memberId: memberId,
+        orderItems: cart.map(item => ({
+            productId: item.id,
+            quantity: item.qty
+        }))
+    };
+
+    try {
+        const res = await fetch('http://localhost:8080/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderRequest)
+        });
+
+        if (res.ok) {
+            const order = await res.json();
+            alert(`訂單建立成功！訂單編號：${order.id}`);
+            cart = [];
+            renderCart();
+            closeCartPanel();
+            // TODO: 導向金流頁面
+        } else {
+            alert('訂單建立失敗，請再試一次');
+        }
+    } catch (err) {
+        console.error('結帳錯誤', err);
+        alert('網路錯誤，請再試一次');
+    }
+}
+
+
+// ===== 產品資料（酒類靜態，周邊從 API 拿）=====
 let category = [
     { type: "national", label: "進口精釀啤酒" },
     { type: "domestic", label: "國產精釀啤酒" },
@@ -336,19 +378,27 @@ let products = [
     { id: "s-6", name: "妹子最愛蘋果琴人", category: "special", volume: "250ml", abv: "8%", price: 350, image: "./productsImg/row-2-column-2.jpg" },
     { id: "s-7", name: "哈密瓜特調", category: "special", volume: "250ml", abv: "12%", price: 350, image: "./productsImg/row-2-column-3.jpg" },
     { id: "s-8", name: "想帶你環遊世界", category: "special", volume: "300ml", abv: "25%", price: 420, image: "./productsImg/row-2-column-4.jpg" },
-
-    // --- 周邊商品 ---
-    { id: "m-1", name: "HoLin53 品牌品脫杯", category: "merch", price: 350, image: "https://images.unsplash.com/photo-1558222218-b7b54eede3f3?auto=format&fit=crop&w=500&q=80", desc: "精緻玻璃品脫杯，印有品牌Logo" },
-    { id: "m-2", name: "HoLin53 馬克杯", category: "merch", price: 280, image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=500&q=80", desc: "陶瓷馬克杯，早餐咖啡到宵夜都適合" },
-    { id: "m-3", name: "皮革杯墊（2入）", category: "merch", price: 220, image: "https://media.istockphoto.com/id/495954440/zh/%E7%85%A7%E7%89%87/collection-of-various-table-coasters.jpg?s=612x612&w=0&k=20&c=ogTHIwNYeuMEUm0Mu4TuMEkXZp7E-CxNO7NGHVBr0AE=", desc: "真皮壓印Logo杯墊，質感滿點" },
-    { id: "m-4", name: "帆布托特包", category: "merch", price: 480, image: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=500&q=80", desc: "厚磅帆布，大容量日用托特包" },
-    { id: "m-5", name: "品牌貼紙組（6入）", category: "merch", price: 120, image: "https://images.unsplash.com/photo-1572375992501-4b0892d50c69?auto=format&fit=crop&w=500&q=80", desc: "防水貼紙，各款設計隨機附上" },
-    { id: "m-6", name: "不鏽鋼開瓶器鑰匙圈", category: "merch", price: 180, image: "https://media.istockphoto.com/id/535942817/zh/%E7%85%A7%E7%89%87/heart-shaped-bottle-opener-keychain-isolated.jpg?s=612x612&w=0&k=20&c=iO8dkfOdPayMv3jAcgcP82V2UnRRNqnvDN8aJkhRTKc=", desc: "隨身開瓶器，印有53字樣" },
-    { id: "m-7", name: "HoLin53 帽T", category: "merch", price: 980, image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=500&q=80", desc: "寬版帽T，胸前刺繡Logo" },
-    { id: "m-8", name: "頸掛式背帶杯套", category: "merch", price: 320, image: "https://media.istockphoto.com/id/1502659573/zh/%E7%85%A7%E7%89%87/crochet-yeti-bag-handmade-background-texture-abstract-for-decoration.jpg?s=612x612&w=0&k=20&c=PY8IS7KFidnePISixRkyKcxQMWnuSSYjAcm6-_yZ-Bo=", desc: "帆布頸掛背帶，可掛350-500ml罐裝" },
-    { id: "m-9", name: "原木單瓶酒架", category: "merch", price: 550, image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=500&q=80", desc: "原木材質酒瓶展示架，居家擺設首選" },
-    { id: "m-10", name: "限定帆布杯袋", category: "merch", price: 150, image: "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=500&q=80", desc: "裝罐裝或瓶裝都OK，印有53字樣" }
 ];
+
+// ===== 從 API 載入周邊商品 =====
+async function loadMerchProducts() {
+    try {
+        const res = await fetch('http://localhost:8080/api/products/category/7');
+        const data = await res.json();
+        const apiMerch = data.map(p => ({
+            id: p.id,               // 資料庫真實 id（數字）
+            name: p.name,
+            category: 'merch',
+            price: p.price,
+            image: p.imageUrl,      // 後端欄位是 imageUrl
+            desc: p.description
+        }));
+        products = [...products, ...apiMerch];
+    } catch (err) {
+        console.error('載入周邊商品失敗', err);
+    }
+}
+
 
 // ===== 渲染產品 =====
 let container = document.getElementById('product-container');
@@ -357,7 +407,7 @@ function renderProducts(data) {
     let htmlContent = '';
 
     data.forEach(product => {
-        const safeId = product.id.trim();
+        const safeId = product.id;
         const isMerch = product.category === 'merch';
 
         if (isMerch) {
@@ -378,7 +428,7 @@ function renderProducts(data) {
                 </div>
             </div>`;
         } else {
-            const isFav = favorites.some(f => f.id.trim() === safeId);
+            const isFav = favorites.some(f => f.id === safeId);
             htmlContent += `
             <div class="col-12 col-md-6 col-lg-3 mb-4">
                 <div class="product-card">
@@ -414,7 +464,8 @@ function filterProducts(category, btnElement) {
 }
 
 // ===== 初始化 =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadMerchProducts(); // 先從 API 載入周邊商品
     initPanelsUI();
     filterProducts("national");
     renderCart();

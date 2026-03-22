@@ -6,6 +6,8 @@ import lombok.ToString;
 import lombok.EqualsAndHashCode;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "categories")
 @Data
@@ -20,6 +22,7 @@ public class Categories {
     private String type;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Products> products;

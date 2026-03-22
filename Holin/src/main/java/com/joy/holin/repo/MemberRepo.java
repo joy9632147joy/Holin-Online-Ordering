@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.joy.holin.entity.Members;
 
-public interface MembersRepo extends JpaRepository<Members, Long> {
+public interface MemberRepo extends JpaRepository<Members, Long> {
 
 	Optional<Members> findByEmail(String email);
 

@@ -39,7 +39,7 @@ public class MemberController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("帳號或密碼錯誤");
 		}
 
-		String token = JwtToken.createToken(members.getEmail());
+		String token = JwtToken.createTokenWithRole(members.getEmail(), "CUSTOMER");
 		return ResponseEntity.ok(token);
 	}
 

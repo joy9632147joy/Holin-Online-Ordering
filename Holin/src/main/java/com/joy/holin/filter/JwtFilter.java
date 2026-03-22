@@ -25,7 +25,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = null;
 
-        if (request.getCookies() != null) {
+        // 1. 先從 Header 找 (Bearer token)
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+
+        // 2. Header 沒有再從 Cookie 找
+        if (token == null && request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("jwtToken".equals(cookie.getName())) {
                     token = cookie.getValue();
@@ -33,7 +40,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         if (token != null && JwtToken.isValid(token)) {
             String email = JwtToken.getEmail(token);
 

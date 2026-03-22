@@ -1,6 +1,6 @@
 package com.joy.holin.config;
 
-import com.joy.holin.repo.MembersRepo;
+import com.joy.holin.repo.MemberRepo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,9 +21,9 @@ import org.springframework.security.config.Customizer;
 @EnableWebSecurity
 public class SecurityConfig {
 
-        private final MembersRepo membersRepo;
+        private final MemberRepo membersRepo;
 
-        public SecurityConfig(MembersRepo membersRepo) {
+        public SecurityConfig(MemberRepo membersRepo) {
                 this.membersRepo = membersRepo;
         }
 
@@ -43,6 +43,8 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/customer/login").permitAll() // 開放客戶登入 API
                                                 .requestMatchers("/api/customer/verify-reset-token").permitAll()
                                                 .requestMatchers("/api/customer/reset-password").permitAll()
+                                                .requestMatchers("/api/products/**").permitAll()
+                                                .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
                                                 .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                                                 .anyRequest().permitAll());
                 // .httpBasic(Customizer.withDefaults()); // 可以移除 Basic Auth，改用 JWT

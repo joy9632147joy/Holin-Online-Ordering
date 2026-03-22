@@ -6,15 +6,13 @@ import org.springframework.stereotype.Service;
 
 import com.joy.holin.dto.MemberRegisterDto;
 import com.joy.holin.entity.Members;
-import com.joy.holin.repo.MembersRepo;
-
-import jakarta.el.ELException;
+import com.joy.holin.repo.MemberRepo;
 
 @Service
 public class MembersService {
 
 	@Autowired
-	private MembersRepo membersRepo;
+	private MemberRepo membersRepo;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
