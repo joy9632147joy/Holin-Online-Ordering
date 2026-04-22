@@ -5,10 +5,10 @@
 本專案為**技術練習作品**，主要目的在於實作完整的「電商購物車邏輯」，並練習將 **Spring Boot 後端**、**JWT 資安驗證** 以及 **第三方支付（綠界科技 ECPay）** 進行實際的 API 串接與整合。
 
 ### 核心技術 (Tech Stack)
-* **前端 (Frontend)**：HTML5, 原生 JavaScript, Bootstrap 5, CSS3
-* **後端 (Backend)**：Java 17, Spring Boot, Spring Security, Spring Data JPA
+* **前端 (Frontend)**：HTML, 原生 JavaScript, Bootstrap, CSS
+* **後端 (Backend)**：Java, Spring Boot, Spring Security, Spring Data JPA
 * **資料庫 (Database)**：MySQL (實作關聯式資料庫設計)
-* **資安與驗證 (Security)**：JWT (JSON Web Token) 跨域無狀態身分驗證
+* **資安與驗證 (Security)**：JWT 跨域無狀態身分驗證
 * **第三方串接 (3rd Party API)**：綠界科技 ECPay 金流 API 
 
 ### 核心實作功能 (Features)
@@ -29,3 +29,9 @@
 #### 4. 購物車狀態管理 (Shopping Cart Logic)
 * 前端使用原生 JavaScript 實作購物車的加入、刪除、數量增減。
 * 動態計算總金額與購物車商品數量。
+
+#### 5.待優化功能及問題
+* creatOrder要處理N+1問題(findAllById一次撈完再用Map查)
+* 庫存超賣(樂觀鎖或redis)
+
+
